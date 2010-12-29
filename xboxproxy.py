@@ -2,6 +2,7 @@
 
 from scapy.all import *
 import socket
+import sys
 
 class XboxProxy(object):
   LOCAL = 1
@@ -26,6 +27,7 @@ class XboxProxy(object):
   #   If ether dst is broadcast, broadcast
   #   Else, look up target in cam.
   def packet(self, p):
+    print repr(p)
     if p[IP].src == "0.0.0.1":
       location = "local"
     else:
@@ -43,10 +45,15 @@ class XboxProxy(object):
     # Push the packet.
     ether_dest = p[Ether].dst
     if ether_dest == "ff:ff:ff:ff:ff:ff":
+      locs = [location]
       for cam_id, cam_loc in self.cam_table.iteritems():
-        if location == cam_loc:
+        if cam_loc in locs:
           continue
+        locs.append(cam_loc)
         self.sendto(p, cam_loc)
+      if self.default_broadcast not in locs:
+        self.sendto(p, self.default_broadcast)
+
     else:
       # look up destination mac in cam table
       # send to that
@@ -68,11 +75,14 @@ class XboxProxy(object):
       print repr([str(p), (host, int(port))])
       self.udp.sendto(str(p), (host, int(port)))
 
-  def run(self):
+  def run(self, args):
+    if len(args) > 1:
+      self.default_broadcast = args[1]
+
     sniff(filter="host 0.0.0.1 or (udp and dst port %d)" % self.server_port,
           prn=self.packet)
   # def run
 
 # class XboxProxy
 
-XboxProxy().run()
+XboxProxy().run(sys.argv)
