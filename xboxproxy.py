@@ -52,7 +52,7 @@ class XboxProxy(object):
           continue
         locs.append(cam_loc)
         self.sendto(p, cam_loc)
-      if self.default_broadcast not in locs:
+      if self.default_broadcast and self.default_broadcast not in locs:
         self.sendto(p, self.default_broadcast)
 
     else:
