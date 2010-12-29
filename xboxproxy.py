@@ -13,6 +13,7 @@ class XboxProxy(object):
     self.udp.bind(("0.0.0.0", self.server_port))
 
     self.cam_table = dict()
+    self.default_broadcast = None
   # def __init__
 
   def add_to_cam(self, identity, location):
