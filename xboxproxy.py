@@ -47,15 +47,16 @@ class XboxProxy(object):
     # Push the packet.
     ether_dest = p[Ether].dst
     if ether_dest == "ff:ff:ff:ff:ff:ff":
-      print "%s(%s): %d bytes (broadcast)" % (location, identity, len(p))
-      locs = [location]
-      for cam_id, cam_loc in self.cam_table.iteritems():
-        if cam_loc in locs:
-          continue
-        locs.append(cam_loc)
-        self.sendto(p, cam_loc)
-      if self.default_broadcast and self.default_broadcast not in locs:
+      if self.default_broadcast:
         self.sendto(p, self.default_broadcast)
+      else:
+        print "%s(%s): %d bytes (broadcast)" % (location, identity, len(p))
+        locs = [location]
+        for cam_id, cam_loc in self.cam_table.iteritems():
+          if cam_loc in locs:
+            continue
+          locs.append(cam_loc)
+          self.sendto(p, cam_loc)
 
     else:
       # look up destination mac in cam table
