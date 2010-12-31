@@ -43,9 +43,11 @@ class XboxProxy(object):
     identity = p[Ether].src
     self.add_to_cam(identity, location)
 
+
     # Push the packet.
     ether_dest = p[Ether].dst
     if ether_dest == "ff:ff:ff:ff:ff:ff":
+      print "%s(%s): %d bytes (broadcast)" % (location, identity, len(p))
       locs = [location]
       for cam_id, cam_loc in self.cam_table.iteritems():
         if cam_loc in locs:
@@ -58,6 +60,7 @@ class XboxProxy(object):
     else:
       # look up destination mac in cam table
       # send to that
+      print "%s(%s): %d bytes (unicast)" % (location, identity, len(p))
       if ether_dest in self.cam_table:
         self.sendto(p, self.cam_table[ether_dest])
       else:
