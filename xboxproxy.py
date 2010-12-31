@@ -4,8 +4,8 @@ from scapy.all import *
 import socket
 import sys
 
+LOCAL = "local"
 class XboxProxy(object):
-  LOCAL = "local"
 
   def __init__(self):
     self.server_port = 6767
