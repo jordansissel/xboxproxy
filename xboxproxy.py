@@ -28,7 +28,7 @@ class XboxProxy(object):
   #   If ether dst is broadcast, broadcast
   #   Else, look up target in cam.
   def packet(self, p):
-    print repr(p)
+    #print repr(p)
     if p[IP].src == "0.0.0.1":
       location = "local"
     else:
@@ -72,11 +72,11 @@ class XboxProxy(object):
   def sendto(self, p, destination):
     print "Sending to %s: %r" % (destination, p)
     if destination == "local":
-      send(p)
+      sendp(p)
     else:
       host, port = destination.split(":")
       
-      print repr([str(p), (host, int(port))])
+      #print repr([str(p), (host, int(port))])
       self.udp.sendto(str(p), (host, int(port)))
 
   def run(self, args):
