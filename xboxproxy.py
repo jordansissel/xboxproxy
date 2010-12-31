@@ -82,6 +82,8 @@ class XboxProxy(object):
   def run(self, args):
     if len(args) > 1:
       self.default_broadcast = args[1]
+      #self.udp.sendto("HELLO", self.default_broadcast)
+      self.add_to_cam("broadcast-%s" % self.default_broadcast, self.default_broadcast)
 
     sniff(filter="host 0.0.0.1 or (udp and dst port %d)" % self.server_port,
           prn=self.packet)
