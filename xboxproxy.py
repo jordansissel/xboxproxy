@@ -5,7 +5,7 @@ import socket
 import sys
 
 class XboxProxy(object):
-  LOCAL = 1
+  LOCAL = "local"
 
   def __init__(self):
     self.server_port = 6767
@@ -29,7 +29,7 @@ class XboxProxy(object):
   #   Else, look up target in cam.
   def packet(self, p):
     if p[IP].src == "0.0.0.1":
-      location = "local"
+      location = LOCAL
     else:
       location = "%s:%s" % (p[IP].src, p[UDP].sport)
       try:
@@ -46,8 +46,10 @@ class XboxProxy(object):
     if ether_dest == "ff:ff:ff:ff:ff:ff":
       print "%s(%s): %d bytes (broadcast)" % (location, identity, len(p))
       if self.default_broadcast:
-        self.sendto(p, self.default_broadcast)
+        if location == LOCAL:
+          self.sendto(p, self.default_broadcast)
       else:
+        # We are the server proxy, forward broadcasts
         locs = [location]
         for cam_id, cam_loc in self.cam_table.iteritems():
           if cam_loc not in locs:
@@ -55,8 +57,7 @@ class XboxProxy(object):
             self.sendto(p, cam_loc)
 
     else:
-      # look up destination mac in cam table
-      # send to that
+      # Unicast, find who to send this to and send it along the way.
       print "%s(%s): %d bytes (unicast)" % (location, identity, len(p))
       if ether_dest in self.cam_table:
         self.sendto(p, self.cam_table[ether_dest])
@@ -68,7 +69,7 @@ class XboxProxy(object):
 
   def sendto(self, p, destination):
     #print "Sending to %s: %r" % (destination, p)
-    if destination == "local":
+    if destination == LOCAL:
       sendp(p)
     else:
       host, port = destination.split(":")
