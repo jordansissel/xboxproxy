@@ -30,7 +30,7 @@ class XboxProxy(object):
   #   If ether dst is broadcast, broadcast
   #   Else, look up target in cam.
   def packet(self, p):
-    if p[IP].src == "0.0.0.1" and self.cam_table[p[Ether].src] in (None, LOCAL):
+    if p[IP].src == "0.0.0.1" and self.cam_table.get(p[Ether].src) in (None, LOCAL):
       location = LOCAL
     else:
       location = "%s:%s" % (p[IP].src, p[UDP].sport)
