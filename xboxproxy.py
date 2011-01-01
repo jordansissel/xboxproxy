@@ -3,6 +3,7 @@
 from scapy.all import *
 import socket
 import sys
+import optparse
 
 LOCAL = "local"
 class XboxProxy(object):
@@ -14,6 +15,7 @@ class XboxProxy(object):
 
     self.cam_table = dict()
     self.default_broadcast = None
+    self.interface = None
   # def __init__
 
   def add_to_cam(self, identity, location):
@@ -28,7 +30,7 @@ class XboxProxy(object):
   #   If ether dst is broadcast, broadcast
   #   Else, look up target in cam.
   def packet(self, p):
-    if p[IP].src == "0.0.0.1":
+    if p[IP].src == "0.0.0.1" and self.cam_table[p[Ether].src] in (None, LOCAL):
       location = LOCAL
     else:
       location = "%s:%s" % (p[IP].src, p[UDP].sport)
@@ -70,7 +72,7 @@ class XboxProxy(object):
   def sendto(self, p, destination):
     #print "Sending to %s: %r" % (destination, p)
     if destination == LOCAL:
-      sendp(p)
+      sendp(p, iface=self.interface)
     else:
       host, port = destination.split(":")
       
@@ -78,9 +80,18 @@ class XboxProxy(object):
       self.udp.sendto(str(p), (host, int(port)))
 
   def run(self, args):
+    parser = optparse.OptionParser()
+    parser.add_option("-i", "--interface", dest="interface", help="interface to write to")
+    options, args = parser.parse_args(args)
+
+    if options.interface is None:
+      print "No interface given to dump packets to. (-i flag missing?)"
+      sys.exit(1)
+
+    self.interface = options.interface
+
     if len(args) > 1:
       self.default_broadcast = args[1]
-      #self.udp.sendto("HELLO", self.default_broadcast)
       self.add_to_cam("broadcast-%s" % self.default_broadcast, self.default_broadcast)
 
     sniff(filter="host 0.0.0.1 or (udp and dst port %d)" % self.server_port,
